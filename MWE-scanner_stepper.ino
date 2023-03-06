@@ -69,6 +69,7 @@ int16_t distance = 0;    // Distance to object in centimeters
 int16_t tfFlux = 0;    // Strength or quality of return signal
 int16_t tfTemp = 0;    // Internal temperature of Lidar sensor chip
 float x = -1., y = -1, z = -1;
+bool scan = true;
 
 void loop() {
   while(Serial.available()==0){}
@@ -92,6 +93,10 @@ void loop() {
     //Serial.println(posy);
   break;
   
+  case 112: //p to allow scan reboot
+    scan = true;
+    break;
+
   case 115: //s for scan
     
     while(Serial.available()==0){
@@ -104,12 +109,13 @@ void loop() {
       // For use of TFMPlus library
       tfmini.getData( distance, tfFlux, tfTemp);
 
-      while (!distance){
+      while ( !distance && scan )
+      {
         //Serial.println( "No distance" );
         // For use of TFMini library
         // getTFminiData(&distance, &strength);
         // For use of TFMPlus library
-        tfmini.getData( distance, tfFlux, tfTemp);
+        tfmini.getData( distance, tfFlux, tfTemp );
         if (distance){
           //Serial.println( distance );
           // ymove( vertical_offset );
@@ -135,7 +141,7 @@ void loop() {
           Serial.write( 9 );
           Serial.println( z );
           if ( posy >= vertical_nb_of_steps ) { ymove( -vertical_nb_of_steps ); posy = 0; xmove( horizontal_offset ); posx = posx + horizontal_offset;} // déplacement vertical ()
-          if ( posx >= horizontal_nb_of_steps ) { xmove( -horizontal_nb_of_steps ); posx = 0; break;} // 
+          if ( posx >= horizontal_nb_of_steps ) { xmove( -horizontal_nb_of_steps ); posx = 0; scan = false; Serial.println( "stop" ); break;} // 
           //Serial.print("cm\t");
           //Serial.print("strength: ");
           //Serial.println(strength);
