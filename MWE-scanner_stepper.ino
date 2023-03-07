@@ -62,7 +62,7 @@ void setup()
   // The total nb of horizontal steps is share out around this manually set horizontal zero 
   
 
-  xmove( -horizontal_nb_of_steps / 2 );
+  
 }
 
 int16_t distance = 0;    // Distance to object in centimeters
@@ -97,7 +97,64 @@ void loop() {
     scan = true;
     break;
 
-  case 115: //s for scan
+  case 115: //s for 2D scan
+    
+    // "Init" x axis position
+    xmove( -horizontal_nb_of_steps / 2 );
+
+    while(Serial.available()==0){
+      //Serial.println( "scanning" );
+      int distance = 0;
+      int strength = 0;
+      // For use of TFMini library
+      // getTFminiData(&distance, &strength);
+      
+      // For use of TFMPlus library
+      tfmini.getData( distance, tfFlux, tfTemp);
+
+      while ( !distance && scan )
+      {
+        //Serial.println( "No distance" );
+        // For use of TFMini library
+        // getTFminiData(&distance, &strength);
+        // For use of TFMPlus library
+        tfmini.getData( distance, tfFlux, tfTemp );
+        if (distance){
+          //Serial.println( distance );
+          // ymove( vertical_offset );
+          ymove( vertical_offset );
+          posy = posy + vertical_offset;
+          computeXYZ( &x, &y, &z, distance, posx * degree_per_step, posy * degree_per_step );
+          delay(10);
+          // Serial.print(posx);
+          // Serial.write(9);
+          // Serial.print(posy);
+          // Serial.write(9);
+          // Serial.print(posz);
+          // Serial.write(9);
+          Serial.print( posx * degree_per_step );
+          Serial.write( 9 );
+          Serial.print( posy * degree_per_step );
+          Serial.write( 9 );
+          Serial.print(distance);
+          Serial.write(9);
+          Serial.print( x );
+          Serial.write( 9 );
+          Serial.print( y );
+          Serial.write( 9 );
+          Serial.println( z );
+          if ( posy >= vertical_nb_of_steps ) { ymove( -vertical_nb_of_steps ); posy = 0; xmove( horizontal_offset ); posx = posx + horizontal_offset;} // déplacement vertical ()
+          if ( posx >= horizontal_nb_of_steps ) { xmove( -horizontal_nb_of_steps ); posx = 0; scan = false; Serial.println( "stop" ); break;} // 
+          //Serial.print("cm\t");
+          //Serial.print("strength: ");
+          //Serial.println(strength);
+        }
+      }
+    }
+  Serial.println( "stop" );
+  break;
+
+  case 121: //y for 1D scan
     
     while(Serial.available()==0){
       //Serial.println( "scanning" );
@@ -123,12 +180,12 @@ void loop() {
           posy = posy + vertical_offset;
           computeXYZ( &x, &y, &z, distance, posx * degree_per_step, posy * degree_per_step );
           delay(10);
-          Serial.print(posx);
-          Serial.write(9);
-          Serial.print(posy);
-          Serial.write(9);
-          Serial.print(posz);
-          Serial.write(9);
+          // Serial.print(posx);
+          // Serial.write(9);
+          // Serial.print(posy);
+          // Serial.write(9);
+          // Serial.print(posz);
+          // Serial.write(9);
           Serial.print( posx * degree_per_step );
           Serial.write( 9 );
           Serial.print( posy * degree_per_step );
@@ -140,8 +197,13 @@ void loop() {
           Serial.print( y );
           Serial.write( 9 );
           Serial.println( z );
-          if ( posy >= vertical_nb_of_steps ) { ymove( -vertical_nb_of_steps ); posy = 0; xmove( horizontal_offset ); posx = posx + horizontal_offset;} // déplacement vertical ()
-          if ( posx >= horizontal_nb_of_steps ) { xmove( -horizontal_nb_of_steps ); posx = 0; scan = false; Serial.println( "stop" ); break;} // 
+          if ( posy >= vertical_nb_of_steps ) {
+            scan = false;
+            Serial.println( "stop" );
+            break;
+          }
+          //if ( posy >= vertical_nb_of_steps ) { ymove( -vertical_nb_of_steps ); posy = 0; xmove( horizontal_offset ); posx = posx + horizontal_offset;} // déplacement vertical ()
+          //if ( posx >= horizontal_nb_of_steps ) { xmove( -horizontal_nb_of_steps ); posx = 0; scan = false; Serial.println( "stop" ); break;} // 
           //Serial.print("cm\t");
           //Serial.print("strength: ");
           //Serial.println(strength);
@@ -150,6 +212,7 @@ void loop() {
     }
   Serial.println( "stop" );
   break;
+
 
   case 105 : //i pour info
     displayInfo();
