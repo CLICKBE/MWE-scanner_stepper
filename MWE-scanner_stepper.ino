@@ -1,8 +1,13 @@
 
 #include <SoftwareSerial.h>   //header file of software serial port
+// To use with TFMini Library, https://github.com/opensensinglab/tfmini/blob/master/src/TFMini.h
+// Along with getDistance() function
 //#include "TFMini.h"
-#include "TFMPlus.h"
 //TFMini tfmini;
+
+// To use with TFMini-Plus library, https://github.com/budryerson/TFMini-Plus/tree/master
+// along with getData( int16_t &dist, int16_t &flux, int16_t &temp) function
+#include "TFMPlus.h"
 TFMPlus tfmini;
 SoftwareSerial SerialTFMini(10, 11);  //define software serial port name as Serial1 and define pin2 as RX & pin3 as TX
 
@@ -27,38 +32,53 @@ int horizontal_nb_of_steps = total_nb_of_steps / 12; // Horizontal rotation of 3
 int vertical_offset = 2;
 int horizontal_offset = 10;
 
+// Arduino CNC Shield connections
+// https://blog.protoneer.co.nz/arduino-cnc-shield/
+#define MOTOR_X_STEP 2
+#define MOTOR_Y_STEP 3
+#define MOTOR_Z_STEP 4
+#define MOTOR_X_DIRECTION 5
+#define MOTOR_Y_DIRECTION 6
+#define MOTOR_Z_DIRECTION 7
+#define STEPPER_ENABLE 8
+
+#define SERIAL_SPEED 115200
+#define TFMINI_SERIAL_SPEED 115200
+
 void setup()
 {
   //motor X
-  pinMode(2, OUTPUT);
-  digitalWrite(2,LOW);
+  pinMode( MOTOR_X_STEP, OUTPUT );
+  digitalWrite( MOTOR_X_STEP,LOW );
   
-  pinMode(5, OUTPUT);
-  digitalWrite(5,LOW);
+  pinMode( MOTOR_X_DIRECTION, OUTPUT );
+  digitalWrite( MOTOR_X_DIRECTION, LOW );
 
   //motor Y  
-  pinMode(3, OUTPUT);
-  digitalWrite(3,LOW);
+  pinMode( MOTOR_Y_STEP, OUTPUT );
+  digitalWrite( MOTOR_Y_STEP, LOW );
   
-  pinMode(6, OUTPUT);
-  digitalWrite(6,LOW);
-  //motor Z
-  pinMode(4, OUTPUT);
-  digitalWrite(4,LOW);
+  pinMode( MOTOR_Y_DIRECTION, OUTPUT );
+  digitalWrite( MOTOR_Y_DIRECTION, LOW );
   
-  pinMode(7, OUTPUT);
-  digitalWrite(7,LOW);
+  // motor Z
+  pinMode( MOTOR_Z_STEP, OUTPUT );
+  digitalWrite( MOTOR_Z_STEP,LOW );
+  
+  pinMode( MOTOR_Z_DIRECTION, OUTPUT );
+  digitalWrite( MOTOR_Z_DIRECTION, LOW );
   
   //motor enable
-  pinMode(8, OUTPUT);
-  digitalWrite(8,LOW);
+  pinMode( STEPPER_ENABLE, OUTPUT );
+  digitalWrite( STEPPER_ENABLE, LOW );
   
-  Serial.begin(115200);         //set bit rate of serial port connecting Arduino with computer
+  Serial.begin( SERIAL_SPEED );         //set bit rate of serial port connecting Arduino with computer
 
-  SerialTFMini.begin(115200);    //Initialize the data rate for the SoftwareSerial port
-  tfmini.begin(&SerialTFMini);            //Initialize the TF Mini sensor}
+  SerialTFMini.begin( TFMINI_SERIAL_SPEED );    //Initialize the data rate for the SoftwareSerial port
+  tfmini.begin( &SerialTFMini );            //Initialize the TF Mini sensor}
 
-  // For now the steppers are manually zeroed. The zero pointface the ground (vertically) and is paralleled to the back of the structure (horizontal)
+  // For now the steppers are manually zeroed. 
+  // The zero pointface the ground (vertically) and is paralleled to the back of the structure (horizontal)
   // The total nb of horizontal steps is share out around this manually set horizontal zero 
   
 
@@ -77,23 +97,26 @@ void loop() {
   //Serial.println( "Command " + String( inbyte ) );
   switch (inbyte){
   
-  case 117: //u
-    zmove(10);
-    posz=posz+10;
+  //-------------------------------
+  // To be remove for final git
+  //case 117: //u
+  //  zmove(10);
+  //  posz=posz+10;
     //Serial.print(posx);
     //Serial.write(9);
     //Serial.println(posy);
-  break;
+  //break;
   
-  case 100: //d
-    zmove(-10);
-    posz=posz-10;
+  // To be remove for final git
+  //case 100: //d
+  //  zmove(-10);
+  //  posz=posz-10;
     //Serial.print(posx);
     //Serial.write(9);
     //Serial.println(posy);
-  break;
-  
-  case 112: //p to allow scan reboot
+  //break;
+  //------------------- 
+   case 112: //p to allow scan reboot
     scan = true;
     break;
 
@@ -106,19 +129,16 @@ void loop() {
       //Serial.println( "scanning" );
       int distance = 0;
       int strength = 0;
-      // For use of TFMini library
-      // getTFminiData(&distance, &strength);
       
       // For use of TFMPlus library
-      tfmini.getData( distance, tfFlux, tfTemp);
+      tfmini.getData( distance, tfFlux, tfTemp); // For use of TFMini library : distance = getDistance();
 
       while ( !distance && scan )
       {
         //Serial.println( "No distance" );
-        // For use of TFMini library
-        // getTFminiData(&distance, &strength);
+
         // For use of TFMPlus library
-        tfmini.getData( distance, tfFlux, tfTemp );
+        tfmini.getData( distance, tfFlux, tfTemp ); // For use of TFMini library : distance = getDistance();
         if (distance){
           //Serial.println( distance );
           // ymove( vertical_offset );
@@ -160,19 +180,15 @@ void loop() {
       //Serial.println( "scanning" );
       int distance = 0;
       int strength = 0;
-      // For use of TFMini library
-      // getTFminiData(&distance, &strength);
-      
+
       // For use of TFMPlus library
-      tfmini.getData( distance, tfFlux, tfTemp);
+      tfmini.getData( distance, tfFlux, tfTemp); // For use of TFMini library : distance = getDistance();
 
       while ( !distance && scan )
       {
-        //Serial.println( "No distance" );
-        // For use of TFMini library
-        // getTFminiData(&distance, &strength);
+
         // For use of TFMPlus library
-        tfmini.getData( distance, tfFlux, tfTemp );
+        tfmini.getData( distance, tfFlux, tfTemp );// For use of TFMini library : distance = getDistance();
         if (distance){
           //Serial.println( distance );
           // ymove( vertical_offset );
@@ -186,17 +202,9 @@ void loop() {
           // Serial.write(9);
           // Serial.print(posz);
           // Serial.write(9);
-          Serial.print( posx * degree_per_step );
-          Serial.write( 9 );
-          Serial.print( posy * degree_per_step );
-          Serial.write( 9 );
-          Serial.print(distance);
-          Serial.write(9);
-          Serial.print( x );
-          Serial.write( 9 );
-          Serial.print( y );
-          Serial.write( 9 );
-          Serial.println( z );
+
+          display
+
           if ( posy >= vertical_nb_of_steps ) {
             scan = false;
             Serial.println( "stop" );
@@ -214,19 +222,18 @@ void loop() {
   break;
 
 
-  case 105 : //i pour info
+  case 105 : // i to display info from the scanner setup
     displayInfo();
-    
     break;
 
-  case 118 : // v to set vertical offset
+  case 118 : // v to set vertical offset (the command must be followed by an int)
     inbyte = Serial.read();
     vertical_offset = Serial.parseInt();
     Serial.println( "---- Modifying vertical offset, new value : " + String( vertical_offset ) );
     //displayInfo();
     break;
 
-  case 104 : // h to set horizontal offset
+  case 104 : // h to set horizontal offset (the command must be followed by an int)
     inbyte = Serial.read();
     horizontal_offset = Serial.parseInt();
     Serial.println( "---- Modifying horizontal offset, new value : " + String( horizontal_offset ) );
@@ -235,22 +242,38 @@ void loop() {
   }
 }
 
-void zmove(long steps){
-  if (steps<0){
-    digitalWrite(7,HIGH);
-  }
-  else{
-    digitalWrite(7,LOW);
-  }
+// TOCHECK : To be removed for final git
+//void zmove(long steps){
+//  if (steps<0){
+//    digitalWrite(7,HIGH);
+//  }
+//  else{
+//    digitalWrite(7,LOW);
+//  }
   
-  for(long i=0;i<abs(steps);i++){
-    digitalWrite(4,HIGH);
-    delay(7);
-    digitalWrite(4,LOW);
-    delay(7);
-  } 
-}
+//  for(long i=0;i<abs(steps);i++){
+//    digitalWrite(4,HIGH);
+//    delay(7);
+//    digitalWrite(4,LOW);
+//    delay(7);
+//  } 
+// }
 
+// Print coordinates info serially
+void displayCoordinates()
+{
+  Serial.print( posx * degree_per_step );
+  Serial.write( 9 );
+  Serial.print( posy * degree_per_step );
+  Serial.write( 9 );
+  Serial.print(distance);
+  Serial.write(9);
+  Serial.print( x );
+  Serial.write( 9 );
+  Serial.print( y );
+  Serial.write( 9 );
+  Serial.println( z );
+}
 
 void ymove(long steps){
   if (steps<0){
@@ -308,8 +331,8 @@ void computeXYZ( float *x, float *y, float *z, int16_t distance, int hAngleDegre
  *  *y (float) : the float pointer to the y coordinates
  *  *z (float) : the float pointer to the z coordinates
  *  distance (int16_t) : distance retrieved by LiDAR sensor
- *  int hAngleDegree : horizontal angle in degree of the pantilt sweeping
- *  int vAngleDegree : vertical angle in degree of the pantilt sweeping
+ *  hAngleDegree (int) : horizontal angle in degree of the pantilt sweeping
+ *  vAngleDegree (int) : vertical angle in degree of the pantilt sweeping
  * Return :
  *  void
  */ 

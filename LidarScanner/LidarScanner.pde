@@ -52,9 +52,9 @@ void draw() {
     //if (components.length == 3) {
     //  vectors.add(new PVector(float(components[0]), float(components[1]), float(components[2])));
     //}
-    if (components.length == 9) {
-      vectors.add(new PVector(float(components[6]), float(components[7]), float(components[8])));
-      println( "in vectors, distance : " + components[5] + " | " + components[6] +" " + components[7] + " " + components[8] );
+    if (components.length == 6) {
+      vectors.add(new PVector(float(components[3]), float(components[4]), float(components[5])));
+      println( "in vectors, distance : " + components[2] + " | " + components[3] +" " + components[4] + " " + components[5] );
       for( int i=0; i< components.length; i++) {
         lines = append( lines, components[ i ] );
       }
