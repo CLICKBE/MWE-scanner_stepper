@@ -20,7 +20,6 @@ Material used
 https://blog.protoneer.co.nz/arduino-cnc-shield/
 
 
-
 ## Scanner serial protocol
 The scanner can be control through serial protocol with the following commands : 
 
@@ -35,13 +34,12 @@ Once the scan is launched (through s or y), it performs the XYZ coordinates conv
 
 `x y z h_idx v_idx distance `
 
-- h_idx : horizontal index of the scan
-- v_idx vertical index of the scan
-- distance : data coming from TF-Mini-s LiDAR sensor
 - x : x coordinate in 3D space
 - y : y coordinate in 3D space
 - z : z coordinate in 3D space
-
+- h_idx : horizontal index of the scan
+- v_idx vertical index of the scan
+- distance : data coming from TF-Mini-s LiDAR sensor
 
 
 ## stepperScaneer-serial2CSV.py 

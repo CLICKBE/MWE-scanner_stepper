@@ -88,10 +88,11 @@ void setup()
 int16_t distance = 0;    // Distance to object in centimeters
 int16_t tfFlux = 0;    // Strength or quality of return signal
 int16_t tfTemp = 0;    // Internal temperature of Lidar sensor chip
-float x = -1., y = -1, z = -1;
+float x = -1., y = -1., z = -1.;
 bool scan = true;
 
 void loop() {
+
   while(Serial.available()==0){}
   inbyte=Serial.read();
   //Serial.println( "Command " + String( inbyte ) );
@@ -123,12 +124,13 @@ void loop() {
   case 115: //s for 2D scan
     
     // "Init" x axis position
+    // Step motor must be positionned manually to the center 
     xmove( -horizontal_nb_of_steps / 2 );
 
     while(Serial.available()==0){
       //Serial.println( "scanning" );
-      int distance = 0;
-      int strength = 0;
+      int16_t distance = 0;
+      //int16_t strength = 0;
       
       // For use of TFMPlus library
       tfmini.getData( distance, tfFlux, tfTemp); // For use of TFMini library : distance = getDistance();
@@ -140,34 +142,17 @@ void loop() {
         // For use of TFMPlus library
         tfmini.getData( distance, tfFlux, tfTemp ); // For use of TFMini library : distance = getDistance();
         if (distance){
-          //Serial.println( distance );
-          // ymove( vertical_offset );
           ymove( vertical_offset );
+          //moveStepper( vertical_offset, )
           posy = posy + vertical_offset;
           computeXYZ( &x, &y, &z, distance, posx * degree_per_step, posy * degree_per_step );
           delay(10);
-          // Serial.print(posx);
-          // Serial.write(9);
-          // Serial.print(posy);
-          // Serial.write(9);
-          // Serial.print(posz);
-          // Serial.write(9);
-          Serial.print( posx * degree_per_step );
-          Serial.write( 9 );
-          Serial.print( posy * degree_per_step );
-          Serial.write( 9 );
-          Serial.print(distance);
-          Serial.write(9);
-          Serial.print( x );
-          Serial.write( 9 );
-          Serial.print( y );
-          Serial.write( 9 );
-          Serial.println( z );
+
+          displayCoordinates();
+
           if ( posy >= vertical_nb_of_steps ) { ymove( -vertical_nb_of_steps ); posy = 0; xmove( horizontal_offset ); posx = posx + horizontal_offset;} // déplacement vertical ()
           if ( posx >= horizontal_nb_of_steps ) { xmove( -horizontal_nb_of_steps ); posx = 0; scan = false; Serial.println( "stop" ); break;} // 
-          //Serial.print("cm\t");
-          //Serial.print("strength: ");
-          //Serial.println(strength);
+
         }
       }
     }
@@ -178,8 +163,8 @@ void loop() {
     
     while(Serial.available()==0){
       //Serial.println( "scanning" );
-      int distance = 0;
-      int strength = 0;
+      int16_t distance = 0;
+      //int strength = 0;
 
       // For use of TFMPlus library
       tfmini.getData( distance, tfFlux, tfTemp); // For use of TFMini library : distance = getDistance();
@@ -196,25 +181,15 @@ void loop() {
           posy = posy + vertical_offset;
           computeXYZ( &x, &y, &z, distance, posx * degree_per_step, posy * degree_per_step );
           delay(10);
-          // Serial.print(posx);
-          // Serial.write(9);
-          // Serial.print(posy);
-          // Serial.write(9);
-          // Serial.print(posz);
-          // Serial.write(9);
 
-          display
+          displayCoordinates();
 
           if ( posy >= vertical_nb_of_steps ) {
             scan = false;
             Serial.println( "stop" );
             break;
           }
-          //if ( posy >= vertical_nb_of_steps ) { ymove( -vertical_nb_of_steps ); posy = 0; xmove( horizontal_offset ); posx = posx + horizontal_offset;} // déplacement vertical ()
-          //if ( posx >= horizontal_nb_of_steps ) { xmove( -horizontal_nb_of_steps ); posx = 0; scan = false; Serial.println( "stop" ); break;} // 
-          //Serial.print("cm\t");
-          //Serial.print("strength: ");
-          //Serial.println(strength);
+
         }
       }
     }
@@ -259,7 +234,102 @@ void loop() {
 //  } 
 // }
 
-// Print coordinates info serially
+
+/***
+ * Move the vertical motor by a certain amount of steps
+ * Arguments : 
+ *  steps (long) : number of steps to move the motor.
+ * Return :
+ *  void
+ */
+void ymove( long steps )
+{
+   moveStepper( steps, MOTOR_Y_DIRECTION, MOTOR_Y_STEP );
+/*  if ( steps < 0 ){
+    digitalWrite( MOTOR_Y_DIRECTION, HIGH );
+  }
+  else{
+    digitalWrite( MOTOR_Y_DIRECTION, LOW );
+  }
+  
+  for( long i = 0 ; i < abs( steps ) ; i++ )
+  {
+    digitalWrite( MOTOR_Y_STEP, HIGH );
+    delay( 5 );
+    digitalWrite( MOTOR_Y_STEP, LOW );
+    delay( 5 );
+  } 
+  */
+}
+
+/***
+ * Move the horizontal motor by a certain amount of steps
+ * Arguments : 
+ *  steps (long) : number of steps to move the motor.
+ * Return :
+ *  void
+ */
+void xmove( long steps )//, int motor_direction_pin, int motor_step_pin )
+{
+  moveStepper( steps, MOTOR_X_DIRECTION, MOTOR_X_STEP );
+/*  if ( steps < 0 )
+  {
+    digitalWrite( MOTOR_X_DIRECTION, HIGH );
+  }
+  else
+  {
+    digitalWrite( MOTOR_X_DIRECTION, LOW );
+  }
+  
+  for( long i = 0 ; i < abs( steps ) ; i++ ) 
+  {
+    digitalWrite( MOTOR_X_STEP, HIGH );
+    delay( 5 );
+    digitalWrite( MOTOR_X_STEP, LOW );
+    delay( 5 );
+  } 
+  */
+}
+
+/***
+ * Move a specific motor by a certain amount of steps
+ * Arguments : 
+ *  steps (long) : number of steps to move the motor.
+ *  motor_direction_pin (int) : the pin of the Arduino connected to the direction of the stepper motor.
+ *  motor_step_pin (int) : the pin of the Arduino connected to the step of the stepper motor.
+ * Return :
+ *  void
+ */
+void moveStepper( long steps, int motor_direction_pin, int motor_step_pin )
+{
+  if ( steps < 0 )
+  {
+    digitalWrite( motor_direction_pin, HIGH );
+  }
+  else
+  {
+    digitalWrite( motor_direction_pin, LOW );
+  }
+  
+  for( long i = 0 ; i < abs( steps ) ; i++ ) 
+  {
+    digitalWrite( motor_step_pin, HIGH );
+    delay( 5 );
+    digitalWrite( motor_step_pin, LOW );
+    delay( 5 );
+  } 
+}
+
+
+/***
+ * Send throught serial horizontal position, vertical position, distance and their converted XYZ coordinates.
+ * The message is as follows : 
+ *    scanning_horizontal_position scanning_vertical_position distance X Y Z
+ * Arguments : 
+ *  None
+ * Return :
+ *  void
+ */
 void displayCoordinates()
 {
   Serial.print( posx * degree_per_step );
@@ -275,38 +345,13 @@ void displayCoordinates()
   Serial.println( z );
 }
 
-void ymove(long steps){
-  if (steps<0){
-    digitalWrite(6,HIGH);
-  }
-  else{
-    digitalWrite(6,LOW);
-  }
-  
-  for(long i=0;i<abs(steps);i++){
-    digitalWrite(3,HIGH);
-    delay(5);
-    digitalWrite(3,LOW);
-    delay(5);
-  } 
-}
-
-void xmove(long steps){
-  if (steps<0){
-    digitalWrite(5,HIGH);
-  }
-  else{
-    digitalWrite(5,LOW);
-  }
-  
-  for(long i=0;i<abs(steps);i++){
-    digitalWrite(2,HIGH);
-    delay(5);
-    digitalWrite(2,LOW);
-    delay(5);
-  } 
-}
-
+/***
+ * Display info from the scanner setup : (nb of steps (vertical and horizontal), ticks per revolution, total number of steps, subdivision  
+ * Arguments : 
+ *  None
+ * Return :
+ *  void
+ */ 
 void displayInfo()
 {
   Serial.println( "vertical_nb_of_steps " + String( vertical_nb_of_steps ) );
@@ -321,7 +366,7 @@ void displayInfo()
   Serial.println( "Horizontal precision (in degree) : " + String( degree_per_step * horizontal_offset ) );
 }
 
-void computeXYZ( float *x, float *y, float *z, int16_t distance, int hAngleDegree, int vAngleDegree ) {
+
 /***
  * Convert horiz_step_idx, vert_step_idx and distance to (x, y, z) coordinates.
  * Computation comes from : https://github.com/bitluni/3DScannerESP8266
@@ -336,6 +381,8 @@ void computeXYZ( float *x, float *y, float *z, int16_t distance, int hAngleDegre
  * Return :
  *  void
  */ 
+void computeXYZ( float *x, float *y, float *z, int16_t distance, int hAngleDegree, int vAngleDegree ) 
+{
 
 //  float yawf = hAngleDegree * M_PI / 180;
 //  float pitchf = vAngleDegree * M_PI / 180;
@@ -368,7 +415,7 @@ void computeXYZ( float *x, float *y, float *z, int16_t distance, int hAngleDegre
   //              );
 
 }
-
+/*
 void getTFminiData(int* distance, int* strength)
 {
   static char i = 0;
@@ -405,3 +452,4 @@ void getTFminiData(int* distance, int* strength)
     }
   }
 }
+*/
