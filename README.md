@@ -3,14 +3,16 @@
 This repository demonstrates a homemade 3D LiDAR scanner made out of TF-Mini-S LiDAR sensor and 2 stepper motors. This scanner can produce 3D cloud point of spaces.
 The LiDAR sensor is fixed on one stepper arm with the help of a 3D printed bracket. This stepper is fixed to the second stepper arm through another bracket. 
 
-![Picture of the 3D LiDAR scanner](scannerLidar-stepper-02-crop.jpg) ![Example of 3D scan vizualisation using Processing](scan3D-exemple.jpg)
+![scannerLidar-stepper-02-crop](https://github.com/CLICKBE/MWE-scanner_stepper/assets/2494294/8350b0a7-daef-4660-8843-7ecf97d9d9a3)
+![scan3D-exemple](https://github.com/CLICKBE/MWE-scanner_stepper/assets/2494294/b51f2bb5-2d3f-4970-921e-cd1419681865)
 
 ## Files in the repository
 - MWE-scanner_stepper.ino : file to be uploaded to the Arduino board
 - stepperScaneer-serial2CSV.py : script to save scan data into a CSV file
 - LidarScannerVisualizer.pde : [Processing](https://processing.org/) script receiving serial command and displaying 3D view of the scene based on the xyz coordinates comming from the scanner
 
-## Arduino Script
+## Arduino Script!
+
 
 Library needed : 
 - TFMPlus : [https://github.com/budryerson/TFMini-Plus][(https://github.com/budryerson/TFMini-Plus)
